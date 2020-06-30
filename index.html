@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+      <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no'>
+        <style>
+            .block {
+                display: flex;
+                padding-left: 10px;
+                padding-right: 10px;
+                padding-top: 5px;
+                padding-bottom: 5px;
+                flex-direction: row;
+            }
+            
+            .block h1, h2, p {
+                margin: 0px;
+                width: 100%;
+            }
+            .ghost {
+                background-color: rgb(240, 240, 240);
+                visibility: hidden;
+            }
+
+            html, body {
+                font-family: 'Avenir';
+                max-width: 100%;
+                overflow-x: hidden;
+            }
+
+            h1,h2,p:focus {
+                outline: none;
+            }
+
+            .blockHandle {
+                cursor: grab;
+                margin-right: 10px;
+                align-items: center;
+                color: lightgray;
+            }
+            .blockHandle.locked {
+                cursor: not-allowed;
+            }
+
+            
+            @font-face {
+                font-family: 'Roboto';
+                font-style: normal;
+                src: local('Roboto'),
+                    url(./Roboto/Roboto-Regular.ttf) format('truetype');
+            }
+
+            @font-face {
+                font-family: 'Avenir';
+                src: local('Avenir'),
+                    url(./Avenir/AvenirLTStd-Medium.otf);
+            }
+
+            .material-icons {
+                font-family: 'Material Icons';
+                font-size: 24px;  /* Preferred icon size */
+                font-style: normal;
+                display: inline-flex;
+                vertical-align: middle;
+            }
+
+            #trash {
+                background-color: red;
+                color: white;
+                text-align: center;
+                padding: 10px;
+                padding-left: 15px;
+                padding-right: 15px;
+                transition: 0.2s;
+                position: absolute;
+                bottom: 20px;
+                right: 10px;
+                height: 25px;
+                display: flex;
+                border-radius: 40px;
+                align-items: center;
+                justify-content: center;
+                font-size: 17px;
+                transform: scale(0);
+            }
+
+            #trash :not(.deleteLabel) {
+                display: none;
+            }
+
+            #editor {
+                transition: 0.3s;
+            }
+            
+            i.deleteLabel {
+                font-size: 25px;
+            }
+            
+        </style>
+    </head>
+    <body>
+        <div id='trash'>
+            <i class="deleteLabel material-icons">delete</i> Drop to delete
+        </div>
+
+        <div id='editor'>
+
+        </div>
+        
+        <script src='./Sortable.js'></script>
+        <script src='./blockTemplates.js'></script>
+        <script src='./Block.js'></script>
+        <script src='./BlockManager.js'></script>
+        <script>
+            const editor = document.getElementById('editor')
+            const trash = document.getElementById('trash')
+            const clicker = document.getElementById('clicker')
+            const blockManager = new BlockManager(editor)
+            
+            let blocks = [
+                {
+                    type: 'h1',
+                    content: 'Hi there!',
+                    editable: true
+                },
+                {
+                    type: 'p',
+                    content: 'This is a <i>new</i> paragraph block'
+                },
+                {
+                    type: 'h2',
+                    content: 'Hello!',
+                    editable: false
+                },
+                {
+                    type: 'p',
+                    content: 'This is a <strong>new</strong> <u>paragraph</u> <strike>block</strike>'
+                }
+            ]
+
+            blockManager.loadBlocks(blocks)
+
+            new Sortable(editor, {
+                group: 'blocks',
+                animation: 150,
+                handle: '.blockHandle',
+                ghostClass: 'ghost',
+                filter: '.locked',
+                onStart: (event) => {
+                    trash.style.transform = 'scale(1)'
+                },
+                onEnd: (event) => {
+                    trash.style.transform = 'scale(0)'
+                }
+            });
+
+            new Sortable(trash, {
+                group: 'blocks',
+                animation: 0,
+                sort:  false,
+                ghostClass: 'ghost',
+                filter: '',
+                onChange: (event) => {
+                    // /trash.style.backgroundColor = 'blue'
+                }
+            })
+
+            editor.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    const currentBlock = getCurrentEditingIndex()
+                    const newBlock = new PBlock({
+                        editable: true,
+                        content: ''
+                    })
+                    blockManager.addBlockAfter(newBlock, currentBlock)
+                    
+                    const blockEl = newBlock.el,
+                    s = window.getSelection(),
+                    r = document.createRange()
+                    blockEl.innerHTML = '\u00a0'
+                    r.selectNodeContents(blockEl)
+                    s.removeAllRanges()
+                    s.addRange(r)
+                    document.execCommand('delete', false, null)
+                    return false
+                }
+                else if (event.keyCode == 8 || event.keyCode == 46) {
+                    const currentBlock = getCurrentEditingIndex()
+                    const previousBlock = blockManager.getBlockBefore(currentBlock.id)
+
+                    if (document.activeElement.innerText.trim().length > 0) { return true }
+                    
+                    event.preventDefault()
+                    event.stopPropagation()
+                    if (previousBlock.id !== currentBlock.id) {
+                        currentBlock.parentElement.removeChild(currentBlock)
+
+                        let blockEl = previousBlock.el,
+                        s = window.getSelection(),
+                        r = document.createRange()
+                        r.selectNodeContents(blockEl)
+                        r.collapse(false)
+                        s.removeAllRanges()
+                        s.addRange(r)
+                        return false
+                    }
+                } 
+            })
+
+            clicker.onclick = function() {
+                document.execCommand('createLink', false, 'https://google.com')
+            }
+
+            function getCurrentEditingIndex() {
+                const focused = document.activeElement
+                let block = focused
+                while (!block.classList.contains('block')) {
+                    block = block.parentElement
+                }
+                return block
+            }
+            
+        </script>
+    </body>
+</html>

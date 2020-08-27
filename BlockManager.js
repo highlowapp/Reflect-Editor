@@ -1,24 +1,32 @@
 const blockTypes = {
     'h1': H1Block,
     'h2': H2Block,
-    'p': PBlock
+    'p': PBlock,
+    'img': ImgBlock,
+    'quote': QuoteBlock
 }
 
 class BlockManager {
     constructor(editor) {
         this.editor = editor
         this.blockIds = {}
+        this.isPremium = false
     }
 
-    loadBlocks(arr) {
+    loadBlocks(arr, viewerMode) {
+        this.editor.innerHTML = ''
         for (let i = 0; i < arr.length; i++) {
             const blockItem = arr[i]
             if (blockItem['editable'] === undefined || blockItem['editable'] === null) {
                 blockItem['editable'] = true
             }
             let block = new blockTypes[ blockItem['type'] ](blockItem)
-            console.log(block)
             this.blockIds[block.id] = block
+
+            if (viewerMode) {
+                block.viewerModeOn()
+            }
+
             block.addTo(this.editor)
         }
     }
@@ -46,9 +54,18 @@ class BlockManager {
     }
 
     addBlockAfter(newBlock, refEl) {
-        console.log(newBlock)
-        this.blockIds[newBlock.id] = newBlock
-        newBlock.addAfter(this.editor, refEl)
+        if (!this.isPremium && (document.querySelectorAll('#editor .block').length >= 10 || (document.querySelectorAll('.block.img').length >= 2 && newBlock instanceof ImgBlock))) {
+            if (window.webkit && window.webkit.messageHandlers) {
+                window.webkit.messageHandlers.showPremium.postMessage('show_paywall')
+            } else {
+                /*Show premium screen on web version*/
+            }
+            return false
+        } else {
+            this.blockIds[newBlock.id] = newBlock
+            newBlock.addAfter(this.editor, refEl)
+            return newBlock
+        }
     }
 
     exportJson() {
@@ -73,5 +90,27 @@ class BlockManager {
         const newBlock = new newBlockType(block.attributes)
         block.handOff(newBlock)
         return newBlock
+    }
+
+    updateBlock(blockId, data) {
+        const block = this.blockIds[blockId]
+        block.updateWith(data)
+    }
+
+    appendBlock(block) {
+        if (!this.isPremium && (document.querySelectorAll('#editor .block').length >= 10 || (document.querySelectorAll('.block.img').length >= 2 && newBlock instanceof ImgBlock))) {
+            if (window.webkit && window.webkit.messageHandlers) {
+                window.webkit.messageHandlers.showPremium.postMessage('show_paywall')
+            } else {
+                /*Show premium screen on web version*/
+            }
+        } else {
+            this.blockIds[block.id] = block
+            block.addTo(this.editor)
+        }
+    }
+
+    unlockPremium() {
+        this.isPremium = true
     }
 }

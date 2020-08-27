@@ -10,7 +10,12 @@ import UIKit
 import WebKit
 import Gridicons
 
-class ReflectEditor: WKWebView, UITextFieldDelegate {
+class ReflectEditorView: WKWebView, UITextFieldDelegate {
+    
+    let popup = UIView()
+    let input = UITextField()
+    let label = UILabel()
+    let doneButton = UIButton()
     
     var currentLink: String = ""
 
@@ -25,8 +30,10 @@ class ReflectEditor: WKWebView, UITextFieldDelegate {
     }
     
     private func setup() {
-        
+        self.scrollView.contentInsetAdjustmentBehavior = .never
     }
+    
+    
     
     func load() {
         let url = Bundle.main.url(forResource: "index", withExtension: "html")!
@@ -45,14 +52,41 @@ class ReflectEditor: WKWebView, UITextFieldDelegate {
         let italics = UIBarButtonItem(image: .gridicon(.italic), style: .plain, target: self, action: #selector(toggleItalics(_:)))
         let underline = UIBarButtonItem(image: .gridicon(.underline), style: .plain, target: self, action: #selector(toggleUnderline(_:)))
         let strikeThrough = UIBarButtonItem(image: .gridicon(.strikethrough), style: .plain, target: self, action: #selector(toggleStrikethrough))
-        let link = UIBarButtonItem(image: .gridicon(.link), style: .plain, target: self, action: #selector(createLink))
+        let addImage = UIBarButtonItem(image: .gridicon(.addImage), style: .plain, target: self, action: #selector(createImageBlock))
+        
+        let h1 = UIBarButtonItem(image: .gridicon(.headingH1), style: .plain, target: self, action: #selector(createH1Block))
+        let h2 = UIBarButtonItem(image: .gridicon(.headingH2), style: .plain, target: self, action: #selector(createH2Block))
+        let quote = UIBarButtonItem(image: .gridicon(.quote), style: .plain, target: self, action: #selector(createQuoteBlock))
+        
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let done = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(stopEditing))
 
-        toolBar.setItems([bold, italics, underline, strikeThrough, link], animated: false)
+        toolBar.setItems([bold, italics, underline, strikeThrough, h1, h2, addImage, quote, flexSpace, done], animated: false)
     
         toolBar.isUserInteractionEnabled = true
 
         toolBar.sizeToFit()
         return toolBar
+    }
+    
+    @objc func createImageBlock() {
+        self.evaluateJavaScript("createImageBlock()")
+    }
+    
+    @objc func createH1Block() {
+        self.evaluateJavaScript("createH1Block()")
+    }
+    
+    @objc func createH2Block() {
+        self.evaluateJavaScript("createH2Block()")
+    }
+    
+    @objc func createQuoteBlock() {
+        self.evaluateJavaScript("createQuoteBlock()")
+    }
+    
+    @objc func stopEditing() {
+        self.endEditing(true)
     }
     
     @objc func toggleStrikethrough() {
@@ -62,6 +96,9 @@ class ReflectEditor: WKWebView, UITextFieldDelegate {
     }
     
     @objc func createLink() {
+        
+        
+        /*
         let alert = UIAlertController(title: "Enter URL:", message: nil, preferredStyle: .alert)
         alert.addTextField(configurationHandler: { textField in
             textField.placeholder = "https://example.com"
@@ -70,11 +107,12 @@ class ReflectEditor: WKWebView, UITextFieldDelegate {
         
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         alert.addAction(UIAlertAction(title: "Done", style: .default, handler: { _ in
-            let command = "clicker.onclick()"
+            let command = "document.execCommand('createLink', false, '\(self.currentLink)')"
             self.evaluateJavaScript(command, completionHandler: nil)
         }))
             
         window?.rootViewController?.present(alert, animated: true, completion: nil)
+         */
     }
     
     @objc func onToolbarDoneClick(sender: UIBarButtonItem) {
@@ -85,6 +123,12 @@ class ReflectEditor: WKWebView, UITextFieldDelegate {
         currentLink = sender.text ?? ""
     }
 
+    @objc func submitLink() {
+        let command = "makeLink()"
+        self.evaluateJavaScript(command, completionHandler: nil)
+    }
+    
+    
 }
 
 

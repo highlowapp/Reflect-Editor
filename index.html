@@ -5,19 +5,91 @@
       rel="stylesheet">
       <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no'>
         <style>
+
+            [contenteditable=true]:empty:before {
+                content: 'Type here';
+                pointer-events: none;
+                display: block; /* For Firefox */
+                color: lightgray;
+            }
+
+            #newBlockOptions {
+                text-align: center;
+                width: 100%;
+                color: rgb(220, 220, 220);
+                padding-top: 30px;
+                border-top: 1px solid rgb(240, 240, 240)
+            }
+
+            #newBlockOptions div {
+                font-size: 13px;
+            }
+
+            #newBlockOptions button {
+                border: none;
+                border-radius: 100%;
+                background:rgb(240, 240, 240);
+                width: 50px;
+                height: 50px;
+                text-align: center;
+                align-items: center;
+                justify-content: center;
+                margin: 5px;
+                color: black;
+                font-size: 20px;
+            }
+
+            #h2Btn {
+                flex-direction: row;
+                font-size: 15px;
+            }
+
             .block {
                 display: flex;
                 padding-left: 10px;
                 padding-right: 10px;
                 padding-top: 5px;
                 padding-bottom: 5px;
+                width: 100%;
                 flex-direction: row;
+            }
+
+            .blockEl {
+                width: 100%;
             }
             
             .block h1, h2, p {
                 margin: 0px;
                 width: 100%;
             }
+
+            .block.h1 {
+                margin-top: 25px;
+            }
+
+            .img-placeholder {
+                width: 100%;
+                background: lightgray;
+                height: 100px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                margin-top: 15px;
+                margin-bottom: 15px;
+            }
+
+            img {
+                width: 100%;
+                margin-top: 15px;
+                margin-bottom: 15px;
+                border-radius: 3px;
+            }
+
+            .img-placeholder .material-icons {
+                font-size: 50px;
+            }
+
             .ghost {
                 background-color: rgb(240, 240, 240);
                 visibility: hidden;
@@ -27,20 +99,51 @@
                 font-family: 'Avenir';
                 max-width: 100%;
                 overflow-x: hidden;
+                background: white;
+                padding-bottom: 100px;
             }
 
-            h1,h2,p:focus {
+            h1,h2,p,blockquote:focus {
                 outline: none;
+            }
+
+            h1,h2,p {
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
+
+            blockquote {
+                background: #FA9C1D33;
+                border-left: 10px solid #FA9C1D;
+                padding: 0.5em 10px;
+                margin-left: 0px;
+                quotes: "\201C""\201D""\2018""\2019";
             }
 
             .blockHandle {
                 cursor: grab;
                 margin-right: 10px;
                 align-items: center;
-                color: lightgray;
+                color: rgb(235, 235, 235);
+                padding-top: 10px;
+                padding-bottom: 10px;
             }
             .blockHandle.locked {
                 cursor: not-allowed;
+            }
+
+            .trasher {
+                color: red;
+                width: 70px;
+                text-align: center;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+                opacity: 0.5;
+            }
+
+            .trasher:focus {
+                background: none;
             }
 
             
@@ -65,6 +168,15 @@
                 vertical-align: middle;
             }
 
+            #trash-container {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                text-align: center;
+                padding-bottom: 35%;
+            }
+
             #trash {
                 background-color: red;
                 color: white;
@@ -73,11 +185,8 @@
                 padding-left: 15px;
                 padding-right: 15px;
                 transition: 0.2s;
-                position: absolute;
-                bottom: 20px;
-                right: 10px;
                 height: 25px;
-                display: flex;
+                display: inline-block;
                 border-radius: 40px;
                 align-items: center;
                 justify-content: center;
@@ -96,50 +205,106 @@
             i.deleteLabel {
                 font-size: 25px;
             }
+
+            #newBlock {
+                margin-top: 20px;
+                width: 100%;
+                text-align: center;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                color: gray;
+            }
+
+            #newBlock span {
+                background-color: lightgray;
+                border-radius: 5px;
+                padding: 10px;
+                display: inline-flex;
+                align-items: center;
+                flex-direction: row;
+                justify-content: center;
+                width: auto;
+            }
             
         </style>
     </head>
     <body>
-        <div id='trash'>
-            <i class="deleteLabel material-icons">delete</i> Drop to delete
+        <div id='trash-container'>
+            <div id='trash'>
+                <i class="deleteLabel material-icons">delete</i> Drop to delete
+            </div>
         </div>
 
         <div id='editor'>
 
         </div>
+
+        <div id='newBlockOptions'>
+            <button class='material-icons' onclick='appendBlock("h1")'>title</button>
+            <button id='h2Btn' class='material-icons' onclick='appendBlock("h2")'>title</button>
+            <button class='material-icons' onclick='appendBlock()'>subject</button>
+            <button class='material-icons' onclick='appendBlock("img")'>add_photo_alternate</button>
+            <button class='material-icons' onclick='appendBlock("quote")'>format_quote</button>
+        </div>
         
         <script src='./Sortable.js'></script>
-        <script src='./blockTemplates.js'></script>
         <script src='./Block.js'></script>
         <script src='./BlockManager.js'></script>
+        
         <script>
             const editor = document.getElementById('editor')
             const trash = document.getElementById('trash')
-            const clicker = document.getElementById('clicker')
+            const newBlock = document.getElementById('newBlock')
             const blockManager = new BlockManager(editor)
-            
-            let blocks = [
-                {
-                    type: 'h1',
-                    content: 'Hi there!',
-                    editable: true
-                },
-                {
-                    type: 'p',
-                    content: 'This is a <i>new</i> paragraph block'
-                },
-                {
-                    type: 'h2',
-                    content: 'Hello!',
-                    editable: false
-                },
-                {
-                    type: 'p',
-                    content: 'This is a <strong>new</strong> <u>paragraph</u> <strike>block</strike>'
-                }
-            ]
 
-            blockManager.loadBlocks(blocks)
+            let hasEdited = false
+
+            let timer = undefined
+
+            let templates = {
+                example: [
+                    {
+                        type: 'quote',
+                        content: 'Test',
+                        editable: true
+                    }
+                ],
+                highlow: [
+                    {
+                        type: 'h1', 
+                        content: 'High',
+                        editable: false
+                    },
+                    {
+                        type: 'img'
+                    },
+                    {
+                        type: 'p',
+                        content: '',
+                        editable: true
+                    },
+                    {
+                        type: 'h1',
+                        content: 'Low',
+                        editable: false
+                    },
+                    {
+                        type: 'img'
+                    },
+                    {
+                        type: 'p',
+                        content: '',
+                        editable: true
+                    }
+                ],
+                diary: [
+                    {
+                        type: 'h1',
+                        content: '',
+                        editable: true
+                    }
+                ]
+            }
 
             new Sortable(editor, {
                 group: 'blocks',
@@ -148,10 +313,11 @@
                 ghostClass: 'ghost',
                 filter: '.locked',
                 onStart: (event) => {
-                    trash.style.transform = 'scale(1)'
+                    //trash.style.transform = 'scale(1)'
                 },
                 onEnd: (event) => {
-                    trash.style.transform = 'scale(0)'
+                    //trash.style.transform = 'scale(0)'
+                    save()
                 }
             });
 
@@ -161,12 +327,25 @@
                 sort:  false,
                 ghostClass: 'ghost',
                 filter: '',
-                onChange: (event) => {
-                    // /trash.style.backgroundColor = 'blue'
+                onEnd: function() {
+                    save()
                 }
             })
 
             editor.addEventListener('keydown', function(event) {
+                if (!hasEdited) {
+                    hasEdited = true
+
+                    if (window.webkit && window.webkit.messageHandlers) {
+                        window.webkit.messageHandlers.hasEdited.postMessage('hasEdited')
+                    } else {
+                        /*Show premium screen on web version*/
+                    }
+                }
+
+                clearTimeout(timer)
+                timer = setTimeout(save, 500)
+
                 if (event.key === 'Enter') {
                     event.preventDefault()
                     event.stopPropagation()
@@ -175,16 +354,18 @@
                         editable: true,
                         content: ''
                     })
-                    blockManager.addBlockAfter(newBlock, currentBlock)
+                    const didWork = blockManager.addBlockAfter(newBlock, currentBlock)
                     
-                    const blockEl = newBlock.el,
-                    s = window.getSelection(),
-                    r = document.createRange()
-                    blockEl.innerHTML = '\u00a0'
-                    r.selectNodeContents(blockEl)
-                    s.removeAllRanges()
-                    s.addRange(r)
-                    document.execCommand('delete', false, null)
+                    if (didWork) {
+                        const blockEl = newBlock.el,
+                        s = window.getSelection(),
+                        r = document.createRange()
+                        blockEl.innerHTML = '\u00a0'
+                        r.selectNodeContents(blockEl)
+                        s.removeAllRanges()
+                        s.addRange(r)
+                        document.execCommand('delete', false, null)
+                    }
                     return false
                 }
                 else if (event.keyCode == 8 || event.keyCode == 46) {
@@ -195,7 +376,7 @@
                     
                     event.preventDefault()
                     event.stopPropagation()
-                    if (previousBlock.id !== currentBlock.id) {
+                    if (previousBlock.id !== currentBlock.id && previousBlock.editable) {
                         currentBlock.parentElement.removeChild(currentBlock)
 
                         let blockEl = previousBlock.el,
@@ -209,9 +390,88 @@
                     }
                 } 
             })
+            
+            function createImageBlock() {
+                const currentBlock = getCurrentEditingIndex()
+                const imgBlock = blockManager.addBlockAfter(new ImgBlock({editable: true}), currentBlock)
+                if (imgBlock) {
+                    const newBlock = blockManager.addBlockAfter(new PBlock({editable: true, content: ''}), imgBlock.el)
+                    const blockEl = newBlock.el,
+                        s = window.getSelection(),
+                        r = document.createRange()
+                        blockEl.innerHTML = '\u00a0'
+                        r.selectNodeContents(blockEl)
+                        s.removeAllRanges()
+                        s.addRange(r)
+                        document.execCommand('delete', false, null)
+                }
+            }
 
-            clicker.onclick = function() {
-                document.execCommand('createLink', false, 'https://google.com')
+            function createH1Block() {
+                const currentBlock = getCurrentEditingIndex()
+                const newBlock = blockManager.addBlockAfter(new H1Block({editable: true, content: ''}), currentBlock)
+                if (newBlock) {
+                    const blockEl = newBlock.el,
+                        s = window.getSelection(),
+                        r = document.createRange()
+                        blockEl.innerHTML = '\u00a0'
+                        r.selectNodeContents(blockEl)
+                        s.removeAllRanges()
+                        s.addRange(r)
+                        document.execCommand('delete', false, null)
+                }
+            }
+
+            function createH2Block() {
+                const currentBlock = getCurrentEditingIndex()
+                const newBlock = blockManager.addBlockAfter(new H2Block({editable: true, content: ''}), currentBlock)
+                if (newBlock) {
+                    const blockEl = newBlock.el,
+                        s = window.getSelection(),
+                        r = document.createRange()
+                        blockEl.innerHTML = '\u00a0'
+                        r.selectNodeContents(blockEl)
+                        s.removeAllRanges()
+                        s.addRange(r)
+                        document.execCommand('delete', false, null)
+                }
+            }
+
+            function createQuoteBlock() {
+                const currentBlock = getCurrentEditingIndex()
+                const newBlock = blockManager.addBlockAfter(new QuoteBlock({editable: true, content: ''}), currentBlock)
+                if (newBlock) {
+                    const blockEl = newBlock.el,
+                        s = window.getSelection(),
+                        r = document.createRange()
+                        blockEl.innerHTML = '\u00a0'
+                        r.selectNodeContents(blockEl)
+                        s.removeAllRanges()
+                        s.addRange(r)
+                        document.execCommand('delete', false, null)
+                }
+            }
+
+            function appendBlock(type) {
+                save()
+                let block = undefined
+                switch (type) {
+                    case 'h1':
+                        block = new H1Block({editable: true, content: ''})
+                        break
+                    case 'h2':
+                        block = new H2Block({editable: true, content: ''})
+                        break
+                    case 'img':
+                        block = new ImgBlock({editable: true})
+                        break
+                    case 'quote':
+                        block = new QuoteBlock({editable: true, content: ''})
+                        break
+                    default:
+                        block = new PBlock({editable: true, content: ''})
+                }
+                blockManager.appendBlock(block)
             }
 
             function getCurrentEditingIndex() {
@@ -222,7 +482,33 @@
                 }
                 return block
             }
+
+            function updateBlock(blockId, data) {
+                blockManager.updateBlock(blockId, data)
+            }
             
+            function enablePremiumFeatures() {
+                blockManager.unlockPremium()
+            }
+
+            function setType(type) {
+                let blocks = templates[type]
+                blockManager.loadBlocks(blocks)
+            }
+
+            function setBlocks(blocks) {
+                blockManager.loadBlocks(blocks)
+            }
+
+            function save() {
+                if (window.webkit && window.webkit.messageHandlers) {
+                    window.webkit.messageHandlers.save.postMessage({
+                        'blocks': blockManager.exportJson()
+                    })
+                } else {
+                    /*Show premium screen on web version*/
+                }
+            }
         </script>
     </body>
 </html>

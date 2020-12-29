@@ -227,6 +227,7 @@
             }
             
         </style>
+        <link href='./darkmodestyles.css' rel='stylesheet'>
     </head>
     <body>
         <div id='trash-container'>
@@ -260,6 +261,16 @@
             let hasEdited = false
 
             let timer = undefined
+
+            function darkMode(el) {
+                document.body.classList.add('dark')
+                document.getElementsByTagName('html')[0].classList.add('dark')
+            }
+
+            function lightMode(el) {
+                document.body.classList.remove('dark')
+                document.getElementsByTagName('html')[0].classList.remove('dark')
+            }
 
             let templates = {
                 example: [
@@ -453,7 +464,6 @@
             }
 
             function appendBlock(type) {
-                save()
                 let block = undefined
                 switch (type) {
                     case 'h1':
@@ -472,6 +482,7 @@
                         block = new PBlock({editable: true, content: ''})
                 }
                 blockManager.appendBlock(block)
+                save()
             }
 
             function getCurrentEditingIndex() {
@@ -485,6 +496,7 @@
 
             function updateBlock(blockId, data) {
                 blockManager.updateBlock(blockId, data)
+                save()
             }
             
             function enablePremiumFeatures() {

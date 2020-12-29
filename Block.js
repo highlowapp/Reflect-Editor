@@ -12,9 +12,9 @@ let generateId = () => {
 class Block {
     constructor(attributes) {
         this.id = generateId()
-        this.editable = attributes['editable']
+        this.editable = attributes['editable'] ? true:false
         this.attributes = attributes
-        this.viewerMode = false
+        this.viewerMode = attributes['viewerMode']
         this.createElement(attributes)
     }
 
@@ -71,6 +71,7 @@ class Block {
             trasher.innerHTML = 'delete_outline'
             trasher.addEventListener('click', () => {
                 this.delete()
+                save()
             })
             block.appendChild(trasher)
         }
@@ -108,9 +109,13 @@ class H1Block extends Block {
 
     createElement(attributes) {
         this.el = document.createElement('h1')
-        this.el.contentEditable = this.editable
+        this.el.contentEditable = (this.editable && !this.viewerMode)
         if ('content' in attributes) {
-            this.el.innerHTML = attributes['content']
+            if (this.viewerMode) {
+                this.el.innerHTML = Autolinker.link(attributes['content'])
+            } else {
+                this.el.innerHTML = attributes['content']
+            }
         }
     }
 
@@ -131,9 +136,13 @@ class H2Block extends Block {
 
     createElement(attributes) {
         this.el = document.createElement('h2')
-        this.el.contentEditable = this.editable
+        this.el.contentEditable = (this.editable && !this.viewerMode)
         if ('content' in attributes) {
-            this.el.innerHTML = attributes['content']
+            if (this.viewerMode) {
+                this.el.innerHTML = Autolinker.link(attributes['content'])
+            } else {
+                this.el.innerHTML = attributes['content']
+            }
         }
     }
 
@@ -154,9 +163,13 @@ class PBlock extends Block {
 
     createElement(attributes) {
         this.el = document.createElement('p')
-        this.el.contentEditable = this.editable
+        this.el.contentEditable = (this.editable && !this.viewerMode)
         if ('content' in attributes) {
-            this.el.innerHTML = attributes['content']
+            if (this.viewerMode) {
+                this.el.innerHTML = Autolinker.link(attributes['content'])
+            } else {
+                this.el.innerHTML = attributes['content']
+            }
         }
     }
 
@@ -266,9 +279,13 @@ class QuoteBlock extends Block {
 
     createElement(attributes) {
         this.el = document.createElement('blockquote')
-        this.el.contentEditable = this.editable
+        this.el.contentEditable = (this.editable && !this.viewerMode)
         if ('content' in attributes) {
-            this.el.innerHTML = attributes['content']
+            if (this.viewerMode) {
+                this.el.innerHTML = Autolinker.link(attributes['content'])
+            } else {
+                this.el.innerHTML = attributes['content']
+            }
         }
     }
 

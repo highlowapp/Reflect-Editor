@@ -20,13 +20,9 @@ class BlockManager {
             if (blockItem['editable'] === undefined || blockItem['editable'] === null) {
                 blockItem['editable'] = true
             }
-            let block = new blockTypes[ blockItem['type'] ](blockItem)
+            blockItem['viewerMode'] = viewerMode
+            let block = new blockTypes[ blockItem['type'] ](blockItem, viewerMode)
             this.blockIds[block.id] = block
-
-            if (viewerMode) {
-                block.viewerModeOn()
-            }
-
             block.addTo(this.editor)
         }
     }
@@ -98,12 +94,13 @@ class BlockManager {
     }
 
     appendBlock(block) {
-        if (!this.isPremium && (document.querySelectorAll('#editor .block').length >= 10 || (document.querySelectorAll('.block.img').length >= 2 && newBlock instanceof ImgBlock))) {
+        if (!this.isPremium && (document.querySelectorAll('#editor .block').length >= 10 || (document.querySelectorAll('.block.img').length >= 2 && block instanceof ImgBlock))) {
             if (window.webkit && window.webkit.messageHandlers) {
                 window.webkit.messageHandlers.showPremium.postMessage('show_paywall')
             } else {
                 /*Show premium screen on web version*/
             }
+            return false
         } else {
             this.blockIds[block.id] = block
             block.addTo(this.editor)

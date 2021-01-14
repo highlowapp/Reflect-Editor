@@ -349,7 +349,16 @@
 
                     if (window.webkit && window.webkit.messageHandlers) {
                         window.webkit.messageHandlers.hasEdited.postMessage('hasEdited')
-                    } else {
+                    } 
+                    
+                    else if (window.Android) {
+
+                        //Tell Android the document has been edited
+                        Android.hasEdited()
+
+                    }
+                    
+                    else {
                         /*Show premium screen on web version*/
                     }
                 }
@@ -517,7 +526,16 @@
                     window.webkit.messageHandlers.save.postMessage({
                         'blocks': blockManager.exportJson()
                     })
-                } else {
+                } 
+                
+                else if (window.Android) {
+
+                    //Tell Android to save the document
+                    Android.saveActivity( blockManager.exportJson() )
+
+                }
+
+                else {
                     /*Show premium screen on web version*/
                 }
             }

@@ -36,7 +36,16 @@
             function postMessageToHost(name, payload) {
                 if (window.webkit && window.webkit.messageHandlers) {
                     window.webkit.messageHandlers[name].postMessage(payload)
-                } else {
+                }
+                
+                else if (window.Android) {
+
+                    //Refer the message to Android
+                    Android[name](payload);
+
+                }
+                
+                else {
                     /*Show premium screen on web version*/
                 }
             }
@@ -354,6 +363,7 @@
                             break
                         case 'liked':
                             this.likeButton.innerHTML = `<i class='material-icons'>${!this.activity.liked ? 'favorite_border':'favorite'}</i>`
+                            break
                         default:
                             break
                     }

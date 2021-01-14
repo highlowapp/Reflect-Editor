@@ -43,7 +43,16 @@
             function postMessageToHost(name, payload) {
                 if (window.webkit && window.webkit.messageHandlers) {
                     window.webkit.messageHandlers[name].postMessage(payload)
-                } else {
+                } 
+                
+                else if (window.Android) {
+
+                    //Refer the message to Android
+                    Android[name](payload)
+
+                }
+                
+                else {
                     /*Show premium screen on web version*/
                 }
             }
@@ -129,6 +138,8 @@
                     this.date = data['date']
                     this.flagged = data['flagged']
                     this.comments = data['comments']
+                    this.liked = data['liked']
+                    this.likes = data['likes']
                 }
 
                 update(data) {
@@ -141,7 +152,12 @@
                     this.date = data['date'] || this.date
 
                     if (data['flagged'] != null && data['flagged'] != undefined) { this.flagged = data['flagged'] }
+                    if (data['liked'] != null && data['liked'] != undefined) { this.liked = data['liked'] }
                     this.comments = data['comments'] || this.comments
+
+                    const likes = data['likes'].map(user => new User(user))
+                    console.log(likes)
+                    this.likes = likes || this.likes
                 }
 
                 diff(data) {
@@ -157,6 +173,7 @@
                     }
                     if (data['date'] != this.date) { keys.push('date') }
                     if (data['flagged'] != this.flagged) { keys.push('flagged') }
+                    if (data['liked'] != this.liked) { keys.push('liked') }
                     if (data['comments'].length != this.comments.length) { keys.push('comments') }
                     else {
                         for (let i = 0; i < data['comments'].length; i++) {
@@ -165,7 +182,7 @@
                             }
                         }
                     }
-
+                    if (data['likes'].length != this.likes.length) { keys.push('likes') }
                     return keys
                 }
             }
@@ -238,6 +255,17 @@
                         this.el.appendChild(this.meditationDisplay)
                     }
 
+                    this.likesArea = document.createElement('div')
+                    this.likesArea.classList.add('likes')
+                    this.likeButton = document.createElement('div')
+                    this.likeButton.classList.add('like-button')
+                    this.likeButton.innerHTML = `${this.activity.likes.length}<i class='material-icons'>${!this.activity.liked ? 'favorite_border':'favorite'}</i>`
+
+
+                    this.el.appendChild(this.likesArea)
+
+                    this.reloadLikes()
+
                     this.commentsArea = document.createElement('div')
                     this.commentsArea.classList.add('comments')
 
@@ -250,6 +278,24 @@
                     this.el.appendChild(this.commentsArea)
 
                     this.reloadComments()
+                }
+
+                reloadLikes() {
+                    this.likesArea.innerHTML = ''
+                    this.likersArea = document.createElement('div')
+                    this.likersArea.classList.add('likers')
+
+                    this.likeButton.innerHTML = `${this.activity.likes.length}<i class='material-icons'>${!this.activity.liked ? 'favorite_border':'favorite'}</i>`
+                    
+                    this.likesArea.appendChild(this.likeButton)
+                    this.likesArea.appendChild(this.likersArea)
+
+                    for (let i = 0; i < this.activity.likes.length; i++) {
+                        const liker = document.createElement('span')
+                        liker.classList.add('liker')
+                        liker.innerHTML = `<img src='${this.activity.likes[i].getProfileImage()}'>`
+                        this.likersArea.appendChild(liker)
+                    }
                 }
 
                 reloadComments() {
@@ -280,6 +326,9 @@
                         case 'comments':
                             this.reloadComments()
                             break
+                        case 'likes':
+                            this.reloadLikes()
+                            break
                         case 'data':
                             if (this.activity.type == "highlow" || this.activity.type == "diary") {
                                 this.blockManager.loadBlocks(this.activity.data['blocks'], true)
@@ -288,8 +337,11 @@
                             }
                             break
                         case 'flagged':
-                        this.flagButton.style.color = this.activity.flagged ? '#FB2A57':'rgb(200, 200, 200)'
+                            this.flagButton.style.color = this.activity.flagged ? '#FB2A57':'rgb(200, 200, 200)'
                             this.flagButton.innerHTML = `<i class='material-icons'>${!this.activity.flagged ? 'outlined_flag':'flag'}</i><p>${this.activity.flagged ? 'Reported': 'Report'}</p>`
+                            break
+                        case 'liked':
+                            this.likeButton.innerHTML = `<i class='material-icons'>${!this.activity.liked ? 'favorite_border':'favorite'}</i>`
                             break
                         default:
                             break
@@ -376,6 +428,9 @@
                 }
                 const len = activities.length
                 for (let i = 0; i < activitiesJson.length; i++) {
+                    for (let j = 0; j < activitiesJson[i]['likes'].length; j++) {
+                        activitiesJson[i]['likes'][j] = new User(activitiesJson[i]['likes'][j])
+                    }
                     const activity = new ActivityCard( new Activity(activitiesJson[i]), globalUser, reset ? i:i + len )
                     activities.push(activity)
                 }

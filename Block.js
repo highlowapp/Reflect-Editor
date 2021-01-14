@@ -212,7 +212,16 @@ class ImgBlock extends Block {
                 window.webkit.messageHandlers.chooseImage.postMessage({
                     'blockId': this.id
                 })
-            } else {
+            }
+            
+            else if (window.Android) {
+
+                //Tell Android to show an image
+                Android.showImage(this.id)
+
+            }
+            
+            else {
                 const url = prompt('Enter URL:')
                 if (url != undefined && url != null && url != '') {
                     this.setLink(url)
@@ -225,7 +234,16 @@ class ImgBlock extends Block {
                 window.webkit.messageHandlers.chooseImage.postMessage({
                     'blockId': this.id
                 })
-            } else {
+            } 
+            
+            else if (window.Android) {
+
+                //Tell Android to choose an image
+                Android.showImage(this.id)
+
+            }
+
+            else {
                 const url = prompt('Enter URL:')
                 if (url != undefined && url != null && url != '') {
                     this.setLink(url)

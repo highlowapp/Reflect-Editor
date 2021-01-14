@@ -89,6 +89,7 @@ img {
 }
 
 div div.like-button i.material-icons {
+    color: #FB2A57;
     font-size: 33px;
     margin-left: 3px;
 }

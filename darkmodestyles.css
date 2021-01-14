@@ -15,6 +15,10 @@
     background: var(--separator);
 }
 
+.dark .liker {
+    border: 2px solid var(--separator);
+}
+
 .dark .comments {
     border-top: 2px solid var(--separator);
 }

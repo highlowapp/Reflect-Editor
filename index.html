@@ -531,7 +531,7 @@
                 else if (window.Android) {
 
                     //Tell Android to save the document
-                    Android.saveActivity( blockManager.exportJson() )
+                    Android.saveActivity( JSON.stringify( blockManager.exportJson() ) )
 
                 }
 

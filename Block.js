@@ -216,8 +216,8 @@ class ImgBlock extends Block {
             
             else if (window.Android) {
 
-                //Tell Android to show an image
-                Android.showImage(this.id)
+                //Tell Android to choose an image
+                Android.chooseImage(this.id)
 
             }
             
@@ -239,7 +239,7 @@ class ImgBlock extends Block {
             else if (window.Android) {
 
                 //Tell Android to choose an image
-                Android.showImage(this.id)
+                Android.chooseImage(this.id)
 
             }
 

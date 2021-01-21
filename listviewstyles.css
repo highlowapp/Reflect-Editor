@@ -223,7 +223,7 @@ div div.like-button i.material-icons {
 }
 
 html, body {
-    font-family: 'Avenir';
+    font-family: 'Montserrat';
     max-width: 100%;
     overflow-x: hidden;
     background: rgb(240, 240, 240);
@@ -339,9 +339,16 @@ blockquote {
 }
 
 @font-face {
-    font-family: 'Avenir';
-    src: local('Avenir'),
-        url(./Avenir/AvenirLTStd-Medium.otf);
+    font-family: 'Montserrat';
+    src: local('Montserrat'),
+        url(./Montserrat/Montserrat-Light.ttf);
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url(./Montserrat/Montserrat-Bold.ttf);
+    font-weight: bold;
 }
 
 .material-icons {

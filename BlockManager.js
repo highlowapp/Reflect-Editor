@@ -53,7 +53,16 @@ class BlockManager {
         if (!this.isPremium && (document.querySelectorAll('#editor .block').length >= 10 || (document.querySelectorAll('.block.img').length >= 2 && newBlock instanceof ImgBlock))) {
             if (window.webkit && window.webkit.messageHandlers) {
                 window.webkit.messageHandlers.showPremium.postMessage('show_paywall')
-            } else {
+            } 
+            
+            else if (window.Android) {
+
+                //Tell Android to show the premium screen
+                Android.showPremium()
+
+            }
+
+            else {
                 /*Show premium screen on web version*/
             }
             return false
@@ -97,7 +106,16 @@ class BlockManager {
         if (!this.isPremium && (document.querySelectorAll('#editor .block').length >= 10 || (document.querySelectorAll('.block.img').length >= 2 && block instanceof ImgBlock))) {
             if (window.webkit && window.webkit.messageHandlers) {
                 window.webkit.messageHandlers.showPremium.postMessage('show_paywall')
-            } else {
+            } 
+            
+            else if (window.Android) {
+
+                //Tell Android to show the premium screen
+                Android.showPremium()
+
+            }
+
+            else {
                 /*Show premium screen on web version*/
             }
             return false
